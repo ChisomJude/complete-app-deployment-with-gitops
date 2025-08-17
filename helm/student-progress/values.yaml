@@ -1,29 +1,22 @@
 # --- Replicas
 replicaCount: 2
-
 # --- Image 
 image:
   repository: chisomjude/helm-deployment-app
-  tag: "latest"         # CI will set to Git SHA
-  digest: ""            # CI will set to sha256:...
+  tag: "c43d2ebc79bf18dfe90f48f65755929d3e1c92da" # CI will set to Git SHA
+  digest: "sha256:ce20d38f7d05283000554cb0563ec266cca2e5c7bbaf01e6e7874060df612546" # CI will set to sha256:...
   pullPolicy: IfNotPresent
-
 # --- Container port and Service
 containerPort: 8000
-
 service:
   type: ClusterIP
   port: 80
-
 # --- Secret name that stores Vault env vars
 secret:
   name: vault-secrets
-
 # --- Secret template (create a Kubernetes Secret with Vault env vars)
 secretTemplate:
   create: false
-
-
 # --- Probes (tune as needed)
 livenessProbe:
   httpGet:
@@ -34,7 +27,6 @@ livenessProbe:
   timeoutSeconds: 1
   failureThreshold: 3
   successThreshold: 1
-
 readinessProbe:
   httpGet:
     path: /health
@@ -44,7 +36,6 @@ readinessProbe:
   timeoutSeconds: 1
   failureThreshold: 3
   successThreshold: 1
-
 # --- Resources
 resources:
   requests:
@@ -53,4 +44,3 @@ resources:
   limits:
     cpu: "500m"
     memory: "512Mi"
-
