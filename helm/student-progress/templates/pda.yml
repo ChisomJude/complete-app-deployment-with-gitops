@@ -1,13 +1,17 @@
+{{- if and .Values.podDisruptionBudget.enabled (or .Values.podDisruptionBudget.minAvailable .Values.podDisruptionBudget.maxUnavailable) }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "student-progress.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ include "student-progress.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "student-progress.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if hasKey .Values.podDisruptionBudget "minAvailable" }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if hasKey .Values.podDisruptionBudget "maxUnavailable" }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+{{- end }}

@@ -53,4 +53,9 @@ resources:
   limits:
     cpu: "500m"
     memory: "512Mi"
-
+    
+# --- Pod Annotations
+podAnnotations: {}
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
