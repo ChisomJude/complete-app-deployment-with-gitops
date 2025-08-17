@@ -3,8 +3,8 @@ replicaCount: 2
 # --- Image 
 image:
   repository: chisomjude/helm-deployment-app
-  tag: "4562227adb7b5ac9c225b4582c355137ef69d3d1" # CI will set to Git SHA , leave empty as ""
-  digest: "sha256:c87cf9ad68463f561d92fda8937927dd93a12c9b197f6a0081ae509b3c857e2c" # CI will set to sha256:..., leave empty as ""
+  tag: "980599b3bc48a37f31523b99d14c2c0d0158c541" # CI will set to Git SHA , leave empty as ""
+  digest: "sha256:a74392acec54cac30f4f403bc769cc74bb71fc74dabc79841bfd6cb099465a0e" # CI will set to sha256:..., leave empty as ""
   pullPolicy: IfNotPresent
 # --- Container port and Service
 containerPort: 8000
