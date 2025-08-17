@@ -1,0 +1,6 @@
+apiVersion: v2
+name: student-progress
+description: Student Progress app with Vault env and Helm deployment
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

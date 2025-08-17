@@ -1,0 +1,76 @@
+name: CI - Build & Push Image, Bump Helm Chart
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "Dockerfile"
+      - "requirements.txt"
+      - "src/**"
+      - "helm/student-progress/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write  # needed to push values.yaml bump commit
+
+jobs:
+  build-push-bump:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/helm-deployment-app
+      IMAGE_TAG: ${{ github.sha }}
+      CHART_PATH: helm/student-progress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker layer cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ runner.os }}-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push image
+        id: buildpush
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Bump Helm image repo, tag & digest
+        env:
+          IMAGE_DIGEST: ${{ steps.buildpush.outputs.digest }}
+        run: |
+          yq -i '.image.repository = strenv(IMAGE_REPO)' $CHART_PATH/values.yaml
+          yq -i '.image.tag        = strenv(IMAGE_TAG)'  $CHART_PATH/values.yaml
+          yq -i '.image.digest     = strenv(IMAGE_DIGEST)' $CHART_PATH/values.yaml
+          git config --global user.name  "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git add $CHART_PATH/values.yaml
+          git commit -m "[skip ci] bump image to ${IMAGE_REPO}:${IMAGE_TAG}" || echo "No changes to commit"
+          git push
