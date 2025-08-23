@@ -2,7 +2,9 @@ name: CI - Build & Push Image, Bump Helm Chart
 
 on:
   push:
-    branches: [ "master" ]
+    branches: 
+    #- master
+     - monitoring-stack
     paths:
       - "Dockerfile"
       - "requirements.txt"
