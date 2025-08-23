@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "student-progress.fullname" . }}
   labels:
+    app: student-progress
     app.kubernetes.io/name: {{ include "student-progress.name" . }}
     helm.sh/chart: {{ include "student-progress.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -30,6 +31,7 @@ spec:
           ports:
             - containerPort: {{ .Values.containerPort }}
           env:
+            # ---  Vault envs (---
             - name: VAULT_ADDR
               valueFrom:
                 secretKeyRef:
@@ -45,6 +47,27 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secret.name }}
                   key: VAULT_ROLE_ID
+
+            # --- OpenTelemetry tracing (Tempo) ---
+            {{- if .Values.tracing.enabled }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.tracing.endpoint | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.tracing.serviceName | quote }}
+            - name: ENVIRONMENT
+              value: {{ .Values.tracing.environment | quote }}
+
+            # send only traces via HTTP/protobuf and add resource attrs
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "deployment.environment={{ .Values.tracing.environment }},service.version={{ .Values.image.tag }}"
+            {{- end }}
+
           readinessProbe:
 {{- toYaml .Values.readinessProbe | nindent 12 }}
           livenessProbe:

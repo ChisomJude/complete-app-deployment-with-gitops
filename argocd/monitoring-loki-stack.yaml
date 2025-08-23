@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+spec:
+  project: monitoring
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: '>=2.10.0 <100.0.0'
+    helm:
+      values: |
+        loki:
+          fullnameOverride: loki
+          service:
+            port: 3100
+          persistence:
+            enabled: false  # demo; enable + set storageClass for prod
+
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki:3100/loki/api/v1/push
+            snippets:
+              pipelineStages:
+                - docker: {}
+                - cri: {}
+                - match:
+                    selector: '{app="student-progress"}'
+                    stages:
+                      - labels:
+                          service_name: student-progress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

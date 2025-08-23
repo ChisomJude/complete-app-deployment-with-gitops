@@ -1,0 +1,24 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "student-progress.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "student-progress.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    # Avoid Argo dry-run errors before CRD exists
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "student-progress.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+{{- end }}

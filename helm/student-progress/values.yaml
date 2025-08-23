@@ -49,3 +49,14 @@ podAnnotations: {}
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
+
+# --- ServiceMonitor for Prometheus Operator
+serviceMonitor:
+  enabled: true
+
+# --- Tracing
+tracing:
+  enabled: true
+  endpoint: "http://tempo.monitoring:4318/v1/traces"   # OTLP HTTP base URL (no /v1/traces)
+  serviceName: "student-progress"
+  environment: "dev"
