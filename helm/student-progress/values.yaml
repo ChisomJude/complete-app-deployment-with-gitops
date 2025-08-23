@@ -3,8 +3,8 @@ replicaCount: 2
 # --- Image 
 image:
   repository: chisomjude/helm-deployment-app
-  tag: "7144091b5a9e6fd1e94ce2e06bb7c0e8ba95c33a" # CI will set to Git SHA , leave empty as ""
-  digest: "sha256:a9e52d7d2ecac9f4694a54ce802ac0419a52e3c1a1ba33ea042940d761a31db6" # CI will set to sha256:..., leave empty as ""
+  tag: "b9f9d04e01513d5331630cd40c17f786e35971dc" # CI will set to Git SHA , leave empty as ""
+  digest: "sha256:0c8a0fce83d3353b433e03abb2fb60092c4acd0dac2dbe5a98679204d491fc8e" # CI will set to sha256:..., leave empty as ""
   pullPolicy: IfNotPresent
 # --- Container port and Service
 containerPort: 8000
@@ -49,14 +49,12 @@ podAnnotations: {}
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
-
 # --- ServiceMonitor for Prometheus Operator
 serviceMonitor:
   enabled: true
-
 # --- Tracing
 tracing:
   enabled: true
-  endpoint: "http://tempo.monitoring:4318/v1/traces"   # OTLP HTTP base URL (no /v1/traces)
+  endpoint: "http://tempo.monitoring:4318/v1/traces" # OTLP HTTP base URL (no /v1/traces)
   serviceName: "student-progress"
   environment: "dev"
